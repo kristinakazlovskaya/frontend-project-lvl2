@@ -8,32 +8,29 @@ const genDiff = (filepath1, filepath2) => {
   const file1 = parseFile(filepath1);
   const file2 = parseFile(filepath2);
 
-  const file1Keys = Object.keys(file1);
-  const file2Keys = Object.keys(file2);
+  const file1Keys = _.sortBy(Object.keys(file1));
+  const file2Keys = _.sortBy(Object.keys(file2));
 
-  const sortedFile1Keys = _.sortBy(file1Keys);
-  const sortedFile2Keys = _.sortBy(file2Keys);
-
-  const result = ['{'];
-
-  for (const key of sortedFile1Keys) {
+  const diff1 = file1Keys.reduce((acc, key) => {
     if (!file2[key]) {
-      result.push(`  - ${key}: ${file1[key]}`);
+      acc.push(`  - ${key}: ${file1[key]}`);
     }
     if (file2[key] === file1[key]) {
-      result.push(`    ${key}: ${file1[key]}`);
+      acc.push(`    ${key}: ${file1[key]}`);
     }
     if (file2[key] && file2[key] !== file1[key]) {
-      result.push(`  - ${key}: ${file1[key]}`);
-      result.push(`  + ${key}: ${file2[key]}`);
+      acc.push(`  - ${key}: ${file1[key]}`);
+      acc.push(`  + ${key}: ${file2[key]}`);
     }
-  }
+    return acc;
+  }, ['{']);
 
-  for (const key of sortedFile2Keys) {
+  const result = file2Keys.reduce((acc, key) => {
     if (!file1[key]) {
-      result.push(`  + ${key}: ${file2[key]}`);
+      acc.push(`  + ${key}: ${file2[key]}`);
     }
-  }
+    return acc;
+  }, diff1);
 
   result.push('}');
 
