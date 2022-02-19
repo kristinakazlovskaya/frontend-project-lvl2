@@ -1,7 +1,7 @@
 import _ from 'lodash';
 
 const findDiff = (file1, file2) => {
-  const keys = Object.keys({ ...file1, ...file2 });
+  const keys = _.union(_.keys(file1), _.keys(file2));
 
   const diff = keys.map((key) => {
     if (!_.has(file2, key)) {
@@ -11,7 +11,7 @@ const findDiff = (file1, file2) => {
       return { name: key, value: file2[key], state: 'added' };
     }
     if (_.isObject(file2[key]) && _.isObject(file1[key])) {
-      return { name: key, children: findDiff(file1[key], file2[key]) };
+      return { name: key, state: 'nested', children: findDiff(file1[key], file2[key]) };
     }
     if (file2[key] !== file1[key]) {
       return {

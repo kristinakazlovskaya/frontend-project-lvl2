@@ -7,37 +7,29 @@ const toString = (value, initSpaces, currentSpaces) => {
     return `${value}`;
   }
 
-  const result = Object.entries(value).map(([entryKey, entryValue]) => `${addSpaces(currentSpaces + (initSpaces * 3))}${entryKey}: ${toString(entryValue, initSpaces, currentSpaces + (initSpaces * 2))}`);
+  const result = _.toPairs(value).map(([entryKey, entryValue]) => `${addSpaces(currentSpaces + (initSpaces * 3))}${entryKey}: ${toString(entryValue, initSpaces, currentSpaces + (initSpaces * 2))}`);
 
   const resultString = result.join('\n');
 
   return `{\n${resultString}\n${addSpaces(currentSpaces + initSpaces)}}`;
 };
 
-const formatStylish = (object, initSpaces = 2) => {
-  const iter = (diff, currentSpaces) => {
-    const result = diff.map((node) => {
-      if (node.state === 'removed') {
-        return `${addSpaces(currentSpaces)}- ${node.name}: ${toString(node.value, initSpaces, currentSpaces)}`;
-      }
-      if (node.state === 'added') {
-        return `${addSpaces(currentSpaces)}+ ${node.name}: ${toString(node.value, initSpaces, currentSpaces)}`;
-      }
-      if (node.state === 'updated') {
-        return `${addSpaces(currentSpaces)}- ${node.name}: ${toString(node.previousValue, initSpaces, currentSpaces)}\n${addSpaces(currentSpaces)}+ ${node.name}: ${toString(node.currentValue, initSpaces, currentSpaces)}`;
-      }
-      if (node.children) {
-        return `${addSpaces(currentSpaces)}  ${node.name}: ${iter(node.children, currentSpaces + (initSpaces * 2))}`;
-      }
-      return `${addSpaces(currentSpaces)}  ${node.name}: ${toString(node.value, initSpaces, currentSpaces)}`;
-    });
+const formatStylish = (diff, initSpaces = 2, currentSpaces = initSpaces) => {
+  const result = diff.map((node) => {
+    const states = {
+      removed: () => `${addSpaces(currentSpaces)}- ${node.name}: ${toString(node.value, initSpaces, currentSpaces)}`,
+      added: () => `${addSpaces(currentSpaces)}+ ${node.name}: ${toString(node.value, initSpaces, currentSpaces)}`,
+      updated: () => `${addSpaces(currentSpaces)}- ${node.name}: ${toString(node.previousValue, initSpaces, currentSpaces)}\n${addSpaces(currentSpaces)}+ ${node.name}: ${toString(node.currentValue, initSpaces, currentSpaces)}`,
+      nested: () => `${addSpaces(currentSpaces)}  ${node.name}: ${formatStylish(node.children, initSpaces, currentSpaces + (initSpaces * 2))}`,
+      unchanged: () => `${addSpaces(currentSpaces)}  ${node.name}: ${toString(node.value, initSpaces, currentSpaces)}`,
+    };
 
-    const resultString = result.join('\n');
+    return states[node.state]();
+  });
 
-    return `{\n${resultString}\n${addSpaces(currentSpaces - initSpaces)}}`;
-  };
+  const resultString = result.join('\n');
 
-  return iter(object, initSpaces);
+  return `{\n${resultString}\n${addSpaces(currentSpaces - initSpaces)}}`;
 };
 
 export default formatStylish;
