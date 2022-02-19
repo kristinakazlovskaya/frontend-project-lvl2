@@ -25,3 +25,9 @@ test('gendiff between json and yml files in plain format', () => {
   const expected = readFileSync(getFixturePath('expected_plain.txt'), 'utf8');
   expect(received).toEqual(expected);
 });
+
+test('gendiff between json and yml files in json format', () => {
+  const received = genDiff(getFixturePath('file1.json'), getFixturePath('file2.yml'), 'json');
+  const expected = readFileSync(getFixturePath('expected_json.txt'), 'utf8');
+  expect(received).toEqual(expected);
+});
