@@ -4,10 +4,10 @@ const findDiff = (file1, file2) => {
   const keys = _.sortBy(_.union(_.keys(file1), _.keys(file2)));
 
   return keys.map((key) => {
-    if (!Object.hasOwn(file2, key)) {
+    if (!_.has(file2, key)) {
       return { name: key, value: file1[key], state: 'removed' };
     }
-    if (!Object.hasOwn(file1, key)) {
+    if (!_.has(file1, key)) {
       return { name: key, value: file2[key], state: 'added' };
     }
     if (typeof file2[key] === 'object' && typeof file1[key] === 'object') {
