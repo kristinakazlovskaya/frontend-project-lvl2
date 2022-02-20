@@ -14,22 +14,26 @@ const toString = (value, initSpaces, currentSpaces) => {
   return `{\n${resultString}\n${addSpaces(currentSpaces + initSpaces)}}`;
 };
 
-const formatStylish = (diff, initSpaces = 2, currentSpaces = initSpaces) => {
-  const result = diff.map((node) => {
-    const states = {
-      removed: () => `${addSpaces(currentSpaces)}- ${node.name}: ${toString(node.value, initSpaces, currentSpaces)}`,
-      added: () => `${addSpaces(currentSpaces)}+ ${node.name}: ${toString(node.value, initSpaces, currentSpaces)}`,
-      updated: () => `${addSpaces(currentSpaces)}- ${node.name}: ${toString(node.previousValue, initSpaces, currentSpaces)}\n${addSpaces(currentSpaces)}+ ${node.name}: ${toString(node.currentValue, initSpaces, currentSpaces)}`,
-      nested: () => `${addSpaces(currentSpaces)}  ${node.name}: ${formatStylish(node.children, initSpaces, currentSpaces + (initSpaces * 2))}`,
-      unchanged: () => `${addSpaces(currentSpaces)}  ${node.name}: ${toString(node.value, initSpaces, currentSpaces)}`,
-    };
+const formatStylish = (tree, initSpaces = 2) => {
+  const iter = (diff, currentSpaces) => {
+    const result = diff.map((node) => {
+      const states = {
+        removed: () => `${addSpaces(currentSpaces)}- ${node.name}: ${toString(node.value, initSpaces, currentSpaces)}`,
+        added: () => `${addSpaces(currentSpaces)}+ ${node.name}: ${toString(node.value, initSpaces, currentSpaces)}`,
+        updated: () => `${addSpaces(currentSpaces)}- ${node.name}: ${toString(node.previousValue, initSpaces, currentSpaces)}\n${addSpaces(currentSpaces)}+ ${node.name}: ${toString(node.currentValue, initSpaces, currentSpaces)}`,
+        nested: () => `${addSpaces(currentSpaces)}  ${node.name}: ${iter(node.children, currentSpaces + (initSpaces * 2))}`,
+        unchanged: () => `${addSpaces(currentSpaces)}  ${node.name}: ${toString(node.value, initSpaces, currentSpaces)}`,
+      };
 
-    return states[node.state]();
-  });
+      return states[node.state]();
+    });
 
-  const resultString = result.join('\n');
+    const resultString = result.join('\n');
 
-  return `{\n${resultString}\n${addSpaces(currentSpaces - initSpaces)}}`;
+    return `{\n${resultString}\n${addSpaces(currentSpaces - initSpaces)}}`;
+  };
+
+  return iter(tree, initSpaces);
 };
 
 export default formatStylish;
